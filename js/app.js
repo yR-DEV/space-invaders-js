@@ -140,3 +140,5 @@ window.requestAnimFrame = (function(){
 				window.setTimeout(callback, 1000 / 60);
             };
 })();
+
+// should I continue on or just add the next part?
