@@ -47,7 +47,6 @@ function Drawable() {
 	};
 }
 
-
 // ---------------------------------------------------------------
 // Creating a Background object that is a child of the drawable object
 // it is drawn on the backgroundCanvas and creates
