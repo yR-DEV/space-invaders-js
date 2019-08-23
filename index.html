@@ -9,16 +9,35 @@
 				top: 0px;
 				left: 0px;
 				background: transparent;
-			}
+			} 
 			#background {
 				z-index: -2;
-            }
+      }
+      #background {
+        z-index: -1;
+      }
+      #ship {
+        z-index: 0;
+      }
 		</style>
   </head>
-  <body onload="init()">
-    <canvas id="backgroundCanvas", height="600", width="800">
+
+<!-- You use 3 canvases so you will not have to redraw the entire game each frame -->
+
+  <body>
+    <!-- Canvas for panning background -->
+    <canvas id="backgroundCanvas", height="800", width="600">
       If the game doesnt load you need to try a different browser my user dude(ette)
     </canvas>
+    <!-- Main canvas -->
+    <canvas id="mainCanvas", height="800", width="600">
+    </canvas>
+    <!-- Canvas for the player -->
+    <canvas id="bikerCanvas", height="800", width="600">
+    </canvas>
+    <!-- Canvas for the score/menu -->
+    <canvas id="scoreCanvas", height="800", width="600">
+    </canvas>    
     <script src="./js/app.js"></script>
   </body>
 </html>

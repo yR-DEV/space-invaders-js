@@ -1,3 +1,7 @@
+import Background from './background';
+import Drawable from './drawable';
+import ImageRepo from './images';
+
 // ---------------------------------------------------------------
 // starting and initializing the game
 // according to the below link, creating these objects are essentially class definitions
@@ -31,8 +35,10 @@ const imageRepo = new function() {
 // and setting base variables that all children will inherit 
 // ---------------------------------------------------------------
 function Drawable() {	
-	this.init = function(x, y) {
+	this.init = function(x, y, width, height) {
         // Defualt variables for the drawable constructor
+		this.height = height;
+		this.width = width;
 		this.x = x;
 		this.y = y;
 	}
