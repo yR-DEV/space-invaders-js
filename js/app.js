@@ -121,6 +121,7 @@ function bikeLock() {
 	// have changed and need updating. This will return true if the 
 	// bikeLock has gone off of the screen and that it is ready to be
 	// cleared in the pool object below
+	// More information on dirty rectangles: https://code.bytespider.eu/post/21438674255/dirty-rectangles
 	this.draw = function() {
 		this.context.clearRect(this.x, this.y, this.width, this.height);
 		this.y -= this.speed;
@@ -207,6 +208,71 @@ function Pool(maxSize) {
 	}
 }
 
+
+
+// ---------------------------------------------------------------
+// Creating the Biker/player object. It is drawn on the bikerCanvas, 
+// responds to player input via KEY_STATUS, and uses the concept 
+// mentioned above, dirty rectanges, to be drawn across the screen
+// ---------------------------------------------------------------
+function Biker() {
+	this.speed = 3;
+	this.bikeLockPool = new Pool(30);
+	this.bikeLockPool.init();
+	let fireRate = 15;
+	let counter = 0;
+	this.draw = function() {
+		this.context.drawImage(imageRepo.biker, this.x, this.y);
+	}
+
+	this.move = function() {
+		counter++;
+		// Checking input to see if valid movement key
+		if (KEY_STATUS.left || KEY_STATUS.right || KEY_STATUS.up || KEY_STATUS.down) {
+			// Passing this conditional means that the ship has moved. We
+			// need to erase it's current location and redraw it in new location
+			this.context.clearRect(this.x, this.y, this.height, this.width);
+			// You now update the x and y according to the direction to move
+			// the biker and redraw him. 
+			if (KEY_STATUS.left) {
+				this.x -= this.speed;
+				// Keeping the player on the screen
+				if (this.x <= 0) {
+					this.x = 0
+				}
+			}
+			else if (KEY_STATUS.right) {
+				this.x += this.speed;
+				if (this.x >= this.canvasWidth - this.width) {
+					this.x = this.canvasWidth - this.width;
+				}
+			}
+			else if (KEY_STATUS.up) {
+				this.y -= this.speed;
+				if (this.y <= this.canvasHeight / 4 * 3) {
+					this.y = this.canvasHeight / 4 * 3;
+				}
+			}
+			else if (KEY_STATUS.down) {
+				this.y += this.speed;
+				if (this.y >= this.canvasHeight - this.height) {
+					this.y = this.canvasHeight - this.height;
+				}
+			}
+			// You finish this off by redrawing the ship
+			this.draw();
+		}
+		// Checking to see if spacebar was pressed and user input 
+		// requested firing of bikeLocks
+		this.fire = function() {
+			// Spawning two bike Locks instead of one. 
+			// I am going to reuse the pool for enemy bullets (milkshakes)
+			// as well so I need to rethink this name
+			this.bikeLockPool.getTwo(this.x + 6, this.y, 3, this.x + 33, this.y, 3);
+		}
+	}
+}
+Biker.prototype = new Drawable();
 
 // ---------------------------------------------------------------
 // Creating the game object which will hold all of the objects
