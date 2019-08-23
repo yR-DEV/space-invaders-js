@@ -101,6 +101,112 @@ function Background() {
 // Set the BG to inherit all properties from the Drawable constructor
 Background.prototype = new Drawable();
 
+// ---------------------------------------------------------------
+// Creating the bikeLock. Multiple instances of the bikeLock will
+// be on the page as the user presses spacebar. Instances are held 
+// animated, drawn, and spawned in the object pool below
+// ---------------------------------------------------------------
+function bikeLock() {
+	// this will be true if the bullet is currently in use
+	this.alive = false;
+
+	// Setting the bullet values
+	this.spawn = function(x, y, speed) {
+		this.x = x;
+		this.y = y;
+		this.speed = speed;
+		this.alive = true;
+	}
+	// Employing dirty rectangles to detect which areas of the game
+	// have changed and need updating. This will return true if the 
+	// bikeLock has gone off of the screen and that it is ready to be
+	// cleared in the pool object below
+	this.draw = function() {
+		this.context.clearRect(this.x, this.y, this.width, this.height);
+		this.y -= this.speed;
+		// Checking to see whether or not the bikeLock is off the screen
+		if (this.y <= 0 - this.height) {
+			return true;
+		}
+		else {
+			this.context.drawImage(imageRepo.bikeLock, this.x, this.y);
+		}
+	};
+
+	// Clearing the values of the bikeLock
+	this.clear = function() {
+		this.x = 0;
+		this.y = 0;
+		this.speed = 0;
+		this.alive = false;
+	}
+}
+bikeLock.prototype = new Drawable();
+
+
+
+// ---------------------------------------------------------------
+// Pool Object: holds various bikeLock object instances. 
+// When it is initialized it creates an array of bikeLock object 
+// instances and when it needs to create a new object for use it 
+// checks the array to see if the last items are in use or not.
+// if it isn't in use it spawns the last bikeLock object instance
+// in the array, pops it from the end, and pushes it to the front
+// ---------------------------------------------------------------
+function Pool(maxSize) {
+	let size = maxSize;
+	let pool = [];
+
+	// Populating the array with bikeLock object instances 
+	this.init = function() {
+		for (var i = 0; i < size; i++) {
+			// initialize a new bikeLock object instance
+			let bikeLock = new bikeLock();
+			bikeLock.init(0, 0, imageRepo.bikeLock.width, imageRepo.bikeLock.height);
+			pool[i] = bikeLock
+		}
+	};
+
+	// Grabs the last bikeLock in the array, initializes it
+	// and pushes it to the front of the array 
+	this.get = function(x, y, speed) {
+		if (!pool[size - 1].alive) {
+			pool[size - 1].spawn(x, y, speed);
+			pool.unshift(pool.pop());
+		}
+	};
+
+	// getTwo is employed so the biker can throw two bikeLocks
+	// at once. If only the get fn above is used twice, the biker
+	// would still only shoot 1 bikeLock instead of two so we need
+	// to check the bike lock pool against player input
+	this.getTwo = function(x1, y1, speed1, x2, y2, speed2) {
+		if(!pool[size - 1].alive &&
+			!pool[size - 2].alive) {
+				 this.get(x1, y1, speed1);
+				 this.get(x2, y2, speed2);
+		}
+	};
+
+	// Now to draw any bikeLocks in use by the object pool
+	// if a bikeLock goes off screen the function inside of the bullet 
+	// object will clear and push it to the front of the array
+	this.animate = function() {
+		for (var i = 0; i < size; i++) {
+			// only draw more bikeLocks until we find one not alive
+			if (pool[i].alive) {
+				if (pool[i].draw()) {
+					pool[i].clear();
+					pool.push((pool.splice(i, 1))[0]);
+				}
+			}
+			else {
+				break;
+			}
+		}
+	}
+}
+
 
 // ---------------------------------------------------------------
 // Creating the game object which will hold all of the objects
@@ -136,6 +242,8 @@ function Game() {
 		animate();
 	};
 }
+
+
 
 
 // ---------------------------------------------------------------
