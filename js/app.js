@@ -1,7 +1,3 @@
-import Background from './background';
-import Drawable from './drawable';
-import ImageRepo from './images';
-
 // ---------------------------------------------------------------
 // starting and initializing the game
 // according to the below link, creating these objects are essentially class definitions
@@ -22,11 +18,33 @@ const init = () => {
 // ---------------------------------------------------------------
 const imageRepo = new function() {
 	// Defining the images
-	this.empty = null;
 	this.background = new Image();
-	
+	this.biker = new Image();
+	this.bikeLock = new Image();
+
+	// Making sure that all images are loaded 
+	let numImages = 3;
+	let numLoaded = 0;
+	function imageLoaded() {
+		numLoaded++;
+		if (numLoaded === numImages) {
+			window.init();
+		}
+	}
+	this.background.onload = function() {
+		imageLoaded();
+	}
+	this.biker.onload = function() {
+		imageLoaded();
+	}
+	this.bikeLock.onload = function() {
+		imageLoaded();
+	}
+
 	// Set image srource files
 	this.background.src = "./img/road.png";
+	this.biker.src = "./img/biker.png";
+	this.bikeLock.src = "./img/bikeLock.png";
 }
 
 

@@ -10,14 +10,17 @@
 				left: 0px;
 				background: transparent;
 			} 
-			#background {
-				z-index: -2;
+			#backgroundCanvas {
+				z-index: -3;
       }
-      #background {
+      #mainCanvas {
+        z-index: -2;
+      }
+      #bikerCanvas {
         z-index: -1;
       }
-      #ship {
-        z-index: 0;
+      #scoreCanvas {
+        z-index: 0
       }
 		</style>
   </head>
@@ -26,18 +29,18 @@
 
   <body>
     <!-- Canvas for panning background -->
-    <canvas id="backgroundCanvas", height="800", width="600">
+    <canvas id="backgroundCanvas", height="600", width="800">
       If the game doesnt load you need to try a different browser my user dude(ette)
     </canvas>
     <!-- Main canvas -->
-    <canvas id="mainCanvas", height="800", width="600">
+    <canvas id="mainCanvas", height="600", width="800">
     </canvas>
     <!-- Canvas for the player -->
-    <canvas id="bikerCanvas", height="800", width="600">
+    <canvas id="bikerCanvas", height="600", width="800">
     </canvas>
     <!-- Canvas for the score/menu -->
-    <canvas id="scoreCanvas", height="800", width="600">
-    </canvas>    
+    <canvas id="scoreCanvas", height="600", width="800">
+    </canvas>
     <script src="./js/app.js"></script>
   </body>
 </html>
