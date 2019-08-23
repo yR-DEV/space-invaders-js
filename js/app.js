@@ -4,12 +4,13 @@
 // and they need to have capital names
 // https://books.google.com/books?id=kzTk0kOCODEC&pg=PT161&lpg=PT161&dq=having+object+names+in+html5+game+start+with+capital+letter&source=bl&ots=5bTfurpboj&sig=YgTd11vr2b6uISvmfn_4rH-EZpQ&hl=en&sa=X&ei=64CRVeHPE4SFyQTwq7LwDg&ved=0CB8Q6AEwAA#v=onepage&q=having%20object%20names%20in%20html5%20game%20start%20with%20capital%20letter&f=false
 // ---------------------------------------------------------------
-var game = new Game();
+const game = new Game();
 
-const init = () => {
+function init() {
 	if(game.init())
 		game.start();
 }
+
 
 
 // ---------------------------------------------------------------
@@ -151,7 +152,7 @@ function bikeLock() {
 		this.alive = false;
 	}
 }
-bikeLock.prototype = new Drawable();
+BikeLock.prototype = new Drawable();
 
 
 
@@ -299,18 +300,44 @@ function Game() {
 	this.init = function() {
 		// Getting background canvas element
 		this.bgCanvas = document.getElementById('backgroundCanvas');
+		this.bikerCanvas = document.getElementById('bikerCanvas');
+		this.mainCanvas = document.getElementById('mainCanvas');
+		this.scoreCanvas = document.getElementById('scoreCanvas');
+
 		// Testing to see if the User's browser supports HTML% canvas elements
         // and false will be returned if it does not and message will be displayed
 		if (this.bgCanvas.getContext) {
 			this.bgContext = this.bgCanvas.getContext('2d');
-		    // Initializing context and canvas information for background
+			this.bikerContext = this.bikerCanvas.getContext('2d');
+			this.mainContext = this.mainCanvas.getContext('2d');
+			this.scoreContext = this.scoreCanvas.getContext('2d');
+
+			// Initializing objects to contain their respective 
+			// context and canvas information for background
 			Background.prototype.context = this.bgContext;
 			Background.prototype.canvasWidth = this.bgCanvas.width;
 			Background.prototype.canvasHeight = this.bgCanvas.height;
+
+			Biker.prototype.context = this.bikerContext;
+			Biker.prototype.canvasWidth = this.bikerCanvas.width;
+			Biker.prototype.canvasHeight = this.bikerCanvas.height;
+
+			BikeLock.prototype.context = this.mainContext;
+			BikeLock.prototype.canvasWidth = this.mainCanvas.width;
+			BikeLock.prototype.canvasHeight = this.mainCanvas.height;
+
 			// Initializing background
 			this.background = new Background();
             // Set the initial drawing point to the X and Y coordinates of 0,0
-            this.background.init(0,0); 
+			this.background.init(0,0); 
+			
+			// Initialize the new biker/player object
+			this.biker = new Biker();
+			// Setting the biker to be drawn at the bottom of the canvas
+			let bikerStartX = this.bikerCanvas.width / 2 - imageRepo.biker.width;
+			let bikerStartY = this.bikerCanvas.height / 4 * 3 + imageRepo.biker.height * 2;
+			this.biker.init(bikerStartX,bikerStartY, imageRepo.biker.width, imageRepo.biker.height);
+
 			return true;
 		} else {
 			return false;
@@ -319,9 +346,11 @@ function Game() {
 	
 	// Begin the animation loop man!
 	this.start = function() {
+		this.ship.draw();
 		animate();
 	};
 }
+
 
 
 
@@ -401,5 +430,3 @@ window.requestAnimFrame = (function(){
 				window.setTimeout(callback, 1000 / 60);
             };
 })();
-
-// should I continue on or just add the next part?
