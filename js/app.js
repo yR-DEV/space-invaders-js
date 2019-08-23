@@ -11,6 +11,7 @@ const init = () => {
 		game.start();
 }
 
+
 // ---------------------------------------------------------------
 // Creating a single object/function to hold all
 // of the images for the game. More reading can be found here
@@ -48,6 +49,8 @@ const imageRepo = new function() {
 }
 
 
+
+
 // ---------------------------------------------------------------
 // Creating the base class for all drawable objects in the game
 // and setting base variables that all children will inherit 
@@ -70,6 +73,9 @@ function Drawable() {
 	this.draw = function() {
 	};
 }
+
+
+
 
 // ---------------------------------------------------------------
 // Creating a Background object that is a child of the drawable object
@@ -100,6 +106,9 @@ function Background() {
 }
 // Set the BG to inherit all properties from the Drawable constructor
 Background.prototype = new Drawable();
+
+
+
 
 // ---------------------------------------------------------------
 // Creating the bikeLock. Multiple instances of the bikeLock will
@@ -143,6 +152,7 @@ function bikeLock() {
 	}
 }
 bikeLock.prototype = new Drawable();
+
 
 
 
@@ -210,6 +220,7 @@ function Pool(maxSize) {
 
 
 
+
 // ---------------------------------------------------------------
 // Creating the Biker/player object. It is drawn on the bikerCanvas, 
 // responds to player input via KEY_STATUS, and uses the concept 
@@ -274,6 +285,9 @@ function Biker() {
 }
 Biker.prototype = new Drawable();
 
+
+
+
 // ---------------------------------------------------------------
 // Creating the game object which will hold all of the objects
 // ---------------------------------------------------------------
@@ -320,7 +334,57 @@ function Game() {
 function animate() {
 	requestAnimFrame( animate );
 	game.background.draw();
+	game.biker.move();
+	game.biker.bikeLockPool.animate();
 }
+
+
+
+
+// ---------------------------------------------------------------
+// Checking for any valid user input and toggling true/false values
+// determined on keydown/keyup functions inherited from the document
+// object. These will be mapped when the user inputs a valid key for movement
+// or for firing bikeLocks.
+// ---------------------------------------------------------------
+KEY_CODES = {
+	32: 'space',
+	37: 'left',
+  	38: 'up',
+  	39: 'right',
+  	40: 'down',
+}
+
+// Creating an array of the keycodes and setting their initial values to false
+// Checking true/false is a quick way to check key press status and make 
+// required clearing/redrawing of objects.
+KEY_STATUS = {};
+for (code in KEY_CODES) {
+	KEY_STATUS[KEY_CODES[code]] = false;
+}
+
+// Setting up the document to listen for key presses via document.onkeydown().
+// When a key is pressed, it sets the key/action to true 
+document.onkeydown = function(event) {
+	// Firefox uses charCode instead of keyCode for user input
+	let keyCode = event.keyCode ? event.keyCode : event.charCode;
+	if (KEY_CODES[keyCode]) {
+		event.preventDefault();
+		KEY_STATUS[KEY_CODES[keyCode]] = true;
+	}
+}
+// Setting up the document to listen for when the user releases a key
+// The pressed key's value is then changed to false so object actions stop
+document.onkeyup = function(event) {
+	// Firefox uses charCode instead of keyCode so setting that
+	let keyCode = event.keyCode ? event.keyCode : event.charCode;
+	if (KEY_CODES[keyCode]) {
+		event.preventDefault();
+		KEY_STATUS[KEY_CODES[keyCode]] = false;
+	}
+} 
+
+
 
 
 // ---------------------------------------------------------------
