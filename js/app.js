@@ -346,7 +346,7 @@ function Game() {
 	
 	// Begin the animation loop man!
 	this.start = function() {
-		this.ship.draw();
+		this.biker.draw();
 		animate();
 	};
 }
