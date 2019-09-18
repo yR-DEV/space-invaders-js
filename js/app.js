@@ -23,9 +23,11 @@ const imageRepo = new function() {
 	this.background = new Image();
 	this.biker = new Image();
 	this.bikeLock = new Image();
+	this.enemyCar = new Image();
+	this.enemyBikeLock = new Image();
 
 	// Making sure that all images are loaded 
-	let numImages = 3;
+	let numImages = 5;
 	let numLoaded = 0;
 	function imageLoaded() {
 		numLoaded++;
@@ -42,11 +44,19 @@ const imageRepo = new function() {
 	this.bikeLock.onload = function() {
 		imageLoaded();
 	}
+	this.enemyCar.onload = function() {
+		imageLoaded();
+	}
+	this.enemyBikeLock.onload = function() {
+		imageLoaded();
+	}
 
 	// Set image srource files
 	this.background.src = "./img/road.png";
 	this.biker.src = "./img/biker.png";
 	this.bikeLock.src = "./img/bikeLock.png";
+	this.enemyCar.src = "./img/car.png";
+	this.enemyBikeLock = "./img/bikeLockEnemy.png";
 }
 
 
@@ -72,6 +82,8 @@ function Drawable() {
     // Define this function to be inherited and further
     // built out by the children of Drawable
 	this.draw = function() {
+	};
+	this.move = function() {
 	};
 }
 
