@@ -104,17 +104,17 @@ function Background() {
     // of the Drawable constructor
 	this.draw = function() {
 		// Start panning the background
-		this.x += this.speed;
+		this.y += this.speed;
 		this.context.drawImage(imageRepo.background, this.x, this.y);
 		
         // Need to draw another image on top of the 
         // image being panned
-		this.context.drawImage(imageRepo.background, this.x - this.canvasWidth, this.y);
+		this.context.drawImage(imageRepo.background, this.x, this.y - this.canvasHeight);
 
         // Once the image that is being panned scrolls off the screen
         // redraw the image by resetting x value of background drawable instance
-		if (this.x >= this.canvasWidth)
-			this.x = 0;
+		if (this.y >= this.canvasHeight)
+			this.y = 0;
 	};
 }
 // Set the BG to inherit all properties from the Drawable constructor
@@ -128,9 +128,10 @@ Background.prototype = new Drawable();
 // be on the page as the user presses spacebar. Instances are held 
 // animated, drawn, and spawned in the object pool below
 // ---------------------------------------------------------------
-function bikeLock() {
+function bikeLock(object) {
 	// this will be true if the bullet is currently in use
 	this.alive = false;
+	let self = object;
 
 	// Setting the bullet values
 	this.spawn = function(x, y, speed) {
@@ -147,13 +148,31 @@ function bikeLock() {
 	this.draw = function() {
 		this.context.clearRect(this.x, this.y, this.width, this.height);
 		this.y -= this.speed;
-		// Checking to see whether or not the bikeLock is off the screen
-		if (this.y <= 0 - this.height) {
+		// Checks to see if player bike lock or enemy bike lock is still on screen
+		// returns true if the bike lock is off of the canvas and clears the bike lock from the 
+		// bullet pool, otherwise it draws the bike lock
+		if (self === 'bikeLock' && this.y <= 0 - this.height) {
+			return true;
+		}
+		else if (self === 'enemyBikeLock' && this.y >= this.canvasHeight) {
 			return true;
 		}
 		else {
-			this.context.drawImage(imageRepo.bikeLock, this.x, this.y);
+			if (self === 'bikeLock') {
+				this.context.drawImage(imageRepo.bikeLock, this.x, this.y)
+			}
+			else if (self = 'enemyBikeLock') {
+				this.context.drawImage(imageRepo.enemyBikeLock, this.x, this.y)
+			}
+			return false;
 		}
+		// Checking to see whether or not the bikeLock is off the screen
+		// if (this.y <= 0 - this.height) {
+		// 	return true;
+		// }
+		// else {
+		// 	this.context.drawImage(imageRepo.bikeLock, this.x, this.y);
+		// }
 	};
 
 	// Clearing the values of the bikeLock
@@ -183,11 +202,27 @@ function Pool(maxSize) {
 
 	// Populating the array with bikeLock object instances 
 	this.init = function() {
-		for (var i = 0; i < size; i++) {
-			// initialize a new bikeLock object instance
-			let bikeLock = new bikeLock();
-			bikeLock.init(0, 0, imageRepo.bikeLock.width, imageRepo.bikeLock.height);
-			pool[i] = bikeLock
+		if (object === "bikeLock") {
+			for (var i = 0; i < size; i++) {
+				// initialize a new bikeLock object instance
+				let bikeLock = new bikeLock();
+				bikeLock.init(0, 0, imageRepo.bikeLock.width, imageRepo.bikeLock.height);
+				pool[i] = bikeLock
+			}
+		}
+		else if (object === 'enemyCar') {
+			for (var i = 0; i < size; i++) {
+				let enemyCar = new EnemyCar();
+				enemyCar.init(0, 0, imageRepo.enemyCar.width, imageRepo.enemyCar.height);
+				pool[i] = enemyCar;
+			}
+		}
+		else if (object === 'enemyBikeLock') {
+			for (var i = 0; i < size; i++) {
+				let enemyBikeLock = new EnemyBikeLock();
+				enemyBikeLock.init(0, 0, imageRepo.enemyBikeLock.width, imageRepo.enemyBikeLock.height);
+				pool[i] = enemyBikeLock;
+			}
 		}
 	};
 
@@ -286,6 +321,10 @@ function Biker() {
 			// You finish this off by redrawing the ship
 			this.draw();
 		}
+		if (KEY_STATUS.space && counter >= fireRate) {
+			this.fire();
+			counter = 0;
+		}
 		// Checking to see if spacebar was pressed and user input 
 		// requested firing of bikeLocks
 		this.fire = function() {
@@ -298,6 +337,76 @@ function Biker() {
 }
 Biker.prototype = new Drawable();
 
+
+// ---------------------------------------------------------------
+// Creating the enemy Object
+// ---------------------------------------------------------------
+function EnemyCar() {
+	let percentFire = .01;
+	let chance = 0;
+	// setting default to not alive until enemy is drawn on canvas
+	this.alive = false;
+	
+	//setting the enemy values
+	this.spawn = function(x, y, speed) {
+		this.x = x;
+		this.y = y;
+		this.speed = speed;
+		this.speedX = 0;
+		this.speedY = speed;
+		// because the enemy is spawned, alive is now true
+		this.alive = true;
+		this.leftEdge = this.x - 90;
+		this.rightEdge = this.x + 90;
+		this.bottomEdge = this.y + 140;
+	};
+
+	// moving the enemy now
+	this.draw = function() {
+		this.context.clearRect(this.x - 1, this.y, this.width + 1, this.height);
+		this.x += this.speedX;
+		this.y += this.speedY;
+		if (this.x <= this.leftEdge) {
+			this.speedX = this.speed;
+		}
+		else if (this.x >= this.rightEdge + this.width) {
+			this.speedX = -this.speed;
+		}
+		else if (this.y >= this.bottomEdge) {
+			this.speed = 1.5;
+			this.speedY = 0;
+			this.y -= 5;
+			this.speedX = -this.speed;
+		}
+
+		this.context.drawImage(imageRepo.enemyCar, this.x, this.y);
+
+		// Every time the car moves on the canvas is has a chance
+		// to fire a bike lock at the player
+		chance = Math.floor(Math.random()*101);
+		if (chance / 100 < percentFire) {
+			this.fire();
+		}
+	};
+
+	// Firing a bike lock from the enemy cars 
+	// that are drawn and move on the canvas
+	this.fire = function() {
+		game.enemyBikeLockPool.get(this.x + this.width / 2, this.y + this.height, -2.5);
+	}
+
+	// Now to reset the enemy values
+	this.clear = function() {
+		this.x = 0;
+		this.y = 0;
+		this.speed = 0;
+		this.speedX = 0;
+		this.speedY = 0;
+		this.alive = false;
+	}
+}
+
+EnemyCar.prototype = new Drawable();
 
 
 
@@ -338,6 +447,10 @@ function Game() {
 			BikeLock.prototype.canvasWidth = this.mainCanvas.width;
 			BikeLock.prototype.canvasHeight = this.mainCanvas.height;
 
+			EnemyCar.prototype.context = this.mainContext;
+			EnemyCar.prototype.context = this.mainCanvas.width;
+			EnemyCar.prototype.context = this.mainCanvas.height;
+
 			// Initializing background
 			this.background = new Background();
             // Set the initial drawing point to the X and Y coordinates of 0,0
@@ -349,6 +462,27 @@ function Game() {
 			let bikerStartX = this.bikerCanvas.width / 2 - imageRepo.biker.width;
 			let bikerStartY = this.bikerCanvas.height / 4 * 3 + imageRepo.biker.height * 2;
 			this.biker.init(bikerStartX,bikerStartY, imageRepo.biker.width, imageRepo.biker.height);
+
+			// Initializing the enemy Pool object!
+			this.enemyCarPool = new Pool(30);
+			this.enemyCarPool.init('enemyCar');
+			let height = imageRepo.enemyCar.height;
+			let width = imageRepo.enemyCar.width;
+			let x = 100;
+			let y = -height;
+			// spaces between enemy cars
+			let spacer = y * 1.5;
+			for (var i = 0; i <= 18; i++) {
+				this.enemyCarPool.get(x, y, 2);
+				x += width + 25;
+				if (i % 6 == 0) {
+					x = 100;
+					y += spacer;
+				}
+			}
+
+			this.enemyBikeLockPool = new Pool(50);
+			this.enemyBikeLockPool.init('enemyBikeLock');
 
 			return true;
 		} else {
