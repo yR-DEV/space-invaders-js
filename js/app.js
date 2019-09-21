@@ -381,6 +381,7 @@ function QuadTree(boundBox, lvl) {
 // checks the array to see if the last items are in use or not.
 // if it isn't in use it spawns the last bikeLock object instance
 // in the array, pops it from the end, and pushes it to the front
+// object pool will hold player and enemy bullets as well as enemies
 // ---------------------------------------------------------------
 function Pool(maxSize) {
 	let size = maxSize;
@@ -466,6 +467,8 @@ function Biker() {
 	this.bikeLockPool.init();
 	let fireRate = 15;
 	let counter = 0;
+	this.collidableWith = "enemyBikeLock";
+	this.type="biker";
 	this.draw = function() {
 		this.context.drawImage(imageRepo.biker, this.x, this.y);
 	}
@@ -505,7 +508,9 @@ function Biker() {
 				}
 			}
 			// You finish this off by redrawing the ship
-			this.draw();
+			if (!this.isColliding) {
+				this.draw();
+			}
 		}
 		if (KEY_STATUS.space && counter >= fireRate) {
 			this.fire();
@@ -532,6 +537,8 @@ function EnemyCar() {
 	let chance = 0;
 	// setting default to not alive until enemy is drawn on canvas
 	this.alive = false;
+	this.collidableWith = "bikeLock";
+	this.type = "enemyCar";
 	
 	//setting the enemy values
 	this.spawn = function(x, y, speed) {
@@ -565,14 +572,30 @@ function EnemyCar() {
 			this.speedX = -this.speed;
 		}
 
-		this.context.drawImage(imageRepo.enemyCar, this.x, this.y);
+		// Ensureing that enemy is not colliding with a user bike lock
+		if (!this.isColliding) {
+			this.context.drawImage(imageRepo.enemyCar, this.x, this.y);
+
+			// Making it so the enemy has a chance to fire a bike lock 
+			// everytime they move on the canvas
+			chance = Math.floor(Math.random() * 101);
+			if (chance / 100 < percentFire) {
+				this.fire();
+			}
+
+			return false;
+		}
+		else {
+			return true;
+		}
+		// this.context.drawImage(imageRepo.enemyCar, this.x, this.y);
 
 		// Every time the car moves on the canvas is has a chance
 		// to fire a bike lock at the player
-		chance = Math.floor(Math.random()*101);
-		if (chance / 100 < percentFire) {
-			this.fire();
-		}
+		// chance = Math.floor(Math.random()*101);
+		// if (chance / 100 < percentFire) {
+		// 	this.fire();
+		// }
 	};
 
 	// Firing a bike lock from the enemy cars 
@@ -670,6 +693,9 @@ function Game() {
 			this.enemyBikeLockPool = new Pool(50);
 			this.enemyBikeLockPool.init('enemyBikeLock');
 
+			// Starting the Quad Tree object for enemies
+			this.quadTree = new QuadTree({x:0,y:0,width:this.mainCanvas.width,height:this.mainCanvas.height});
+
 			return true;
 		} else {
 			return false;
@@ -693,12 +719,45 @@ function Game() {
 // This must be a global function
 // ---------------------------------------------------------------
 function animate() {
+	// Inserting objects into the quadtree
+	game.quadTree.clear();
+	game.quadTree.insert(game.biker);
+	game.quadTree.insert(game.biker.bikeLockPool.getPool());
+	game.quadTree.insert(game.enemyCarPool.getPool());
+	game.quadTree.insert(game.enemyCarBikeLockPool.getPool());
+
+	detectCollision();
+	
 	requestAnimFrame( animate );
 	game.background.draw();
 	game.biker.move();
 	game.biker.bikeLockPool.animate();
 }
 
+// Collision detection algo - Checks the X and Y of each object on the canvas
+// and determines whether or not an object that is collidable with another object
+// overlap on the canvas
+function detectCollision() {
+	let objects = [];
+	game.quadTree.getAllObjects(objects);
+
+	for (var x = 0, len = objects.length; x < len; x++) {
+		game.quadTree.findObjects(obj = [], objects[x]);
+
+		for (y = 0, length = obj.length; y < length; y++) {
+
+			// actual logic for checking
+			if (objects[x].collidableWith === obj[y].type &&
+				(objects[x].x < obj[y].x + obj[y].width &&
+			     objects[x].x + objects[x].width > obj[y].x &&
+				 objects[x].y < obj[y].y + obj[y].height &&
+				 objects[x].y + objects[x].height > obj[y].y)) {
+				objects[x].isColliding = true;
+				obj[y].isColliding = true;
+			}
+		}
+	}
+};
 
 
 
