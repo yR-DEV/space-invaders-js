@@ -1,82 +1,19 @@
-<!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>B I K E R - R E V E N G E</title>
-    <style>
-			canvas {
-				position: absolute;
-				top: 0px;
-				left: 0px;
-				background: transparent;
-			} 
-			#backgroundCanvas {
-				z-index: -3;
-      }
-      #mainCanvas {
-        z-index: -2;
-      }
-      #bikerCanvas {
-        z-index: -1;
-      }
-      #scoreCanvas {
-        z-index: 0
-      }
-      .score {
-				position: absolute;
-				top: 5px;
-				left: 480px;
-				color: #FF7F00;
-				font-family: Helvetica, sans-serif;
-				cursor: default;
-			}
-			.game-over {
-				position: absolute;
-				top: 100px;
-				left: 210px;
-				color: #FF7F00;
-				font-family: Helvetica, sans-serif;
-				font-size: 30px;
-				cursor: default;
-				display: none;
-			}
-			.game-over span {
-				font-size: 20px;
-				cursor: pointer;
-				position: relative;
-				left: 50px;
-			}
-			.game-over span:hover {
-				color: #FFD700;
-			}
-			.loading {
-				position: absolute;
-				top: 100px;
-				left: 210px;
-				color: #FF7F00;
-				font-family: Helvetica, sans-serif;
-				font-size: 30px;
-				cursor: default;
-			}
-		</style>
-  </head>
-
-<!-- You use 3 canvases so you will not have to redraw the entire game each frame -->
-
-  <body>
-    <!-- Canvas for panning background -->
-    <canvas id="backgroundCanvas", height="600", width="800">
-      If the game doesnt load you need to try a different browser my user dude(ette)
-    </canvas>
-    <!-- Main canvas -->
-    <canvas id="mainCanvas", height="600", width="800">
-    </canvas>
-    <!-- Canvas for the player -->
-    <canvas id="bikerCanvas", height="600", width="800">
-    </canvas>
-    <!-- Canvas for the score/menu -->
-    <canvas id="scoreCanvas", height="600", width="800">
-    </canvas>
-    <script src="./js/app.js"></script>
-  </body>
+    <head>
+        <title>SpaceInvad3rCl0ne</title>
+        <style>
+            canvas {
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                background: transparent;
+            }
+        </style>
+    </head>
+    <body onload="init()">
+        <canvas id="background-canvas" height="360" width="600">
+            Your browser doesn't support HTML5 canvas elements, get off of netscape, man!
+        </canvas>
+        <script src="./js/app.js"></script>
+    </body>
 </html>
