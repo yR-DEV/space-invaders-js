@@ -1,3 +1,12 @@
+// Initializing the game function
+var game = new Game();
+function init() {
+    if (game.init()) {
+        game.start();
+    }
+};
+
+
 // We need to define an image repository
 // A single definition ensures that images are only
 // created once. This type of object is called a singleton.
@@ -327,17 +336,47 @@ function animate() {
 };
 
 
-// Initialize the game
-var game = new Game();
-function init() {
-    if (game.init()) {
-        game.start();
-    }
+// Keycode object, that will be mapped upon user input
+KEY_CODES = {
+    32: 'space',
+    37: 'left',
+    38: 'up',
+    39: 'right',
+    40: 'down'
 };
 
 
-// Keycode object, that will be mapped upon user input
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// Create an array to hold the KEY_CODES and sets their
+// values to false. Checking true or false is the quickest way to check the 
+// status of a key press and which specific key was pressed
+// when determining when to move and which direction
+KEY_STATUS = {};
+for (code in KEY_CODES) {
+    KEY_STATUS[KEY_CODES[code]] = false;
+};
+
+
+// Set up the document to listen for onkeydown event (i.e. the user pressing a key)
+// When a key is pressed it sets the appropiate direcctions to true AND 
+// it lets us know WHAT key was pressed
+document.onkeydown = function(event) {
+    // firefox and opera use "charCode" to return pressed key
+    var keyCode = (event.keyCode) ? event.keyCode : event.charCode;
+    if (KEY_CODES[keyCode]) {
+        event.preventDefault();
+        KEY_STATUS[KEY_CODES[keyCode]] = true;
+    }
+} 
+
+
+document.onkeyup = function(event) {
+    // firefox and opera use "charCode" to return pressed key
+    var keyCode = (event.keyCode) ? event.keyCode : event.charCode;
+    if (KEY_CODES[keyCode]) {
+        event.preventDefault();
+        KEY_STATUS[KEY_CODES[keyCode]] = false;
+    }
+}
 
 
 // requestAnim layer finds the first browser API that 
