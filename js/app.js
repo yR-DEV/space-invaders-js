@@ -168,6 +168,75 @@ function Pool(maxSize) {
 }
 
 
+// THE SHIP OBJECT WHOOooOooO!
+// ship is going to be drawn on the ship canvas
+// and the ship, like the bullets, uses dirty rectangles to move around the screen
+// and prevent unecessary garbage collection
+function Ship() {
+    // initializing pool for ship bullets!
+    this.bulletPool = new Pool();
+    this.bulletPool.init();
+    // setting default values
+    this.speed = 3;
+    var fireRate = 15;
+    var counter = 0;
+    
+    // we need to draw the ship on the ship canvas
+    this.draw = function() {
+        this.context.drawImage(imageRepo.spaceship, this.x, this.y);
+    };
+    this.move = function() {
+        counter++;
+        // Checking to see if the user's action is a movement action
+        if (KEY_STATUS.left || KEY_STATUS.right || KEY_STATUS.up || KEY_STATUS.down) {
+            // if conditional is passed, the user has request that the ship move. 
+            // So, we need to erase it from its current location and redraw
+            this.context.clearRect(this.x, this.y, this.height, this.width);
+            // Updating the x and the y of the ship location and redrawing
+            // not adding diagonal movement yet, but all else if's should be 
+            // changed to just if's for that movement as well bc canvas runs at 60FPS! CRAZY!
+            if (KEY_STATUS.left) {
+                this.x -= this.speed;
+                // keep the player on the canvas!
+                if (this.x <= 0) {
+                    this.x = 0;
+                } 
+            } else if (KEY_STATUS.right) {
+                this.x += this.speed;
+                // keep the player on the canvas!
+                if (this.x >= this.canvasWidth - this.width) {
+                    this.x = this.canvasWidth - this.width;
+                }
+            } else if (KEY_STATUS.up) {
+                this.y -= this.speed;
+                // keep the player on the canvas!
+                if (this.y <= this.canvasHeight / 4 * 3) {
+                    this.y = this.canvasHeight / 4 * 3
+                }
+            } else if (KEY_STATUS.down) {
+                this.y += this.speed;
+                // keep the player on the canvas!
+                if (this.y >= this.canvasHeight - this.height) {
+                    this.y = this.canvasHeight - this.height;
+                }
+            }
+            // finish by redrawing the ship with the updated values!
+            this.draw();
+            // Fire bullets!
+            if (KEY_STATUS.space && counter >= fireRate) {
+                this.fire();
+                counter = 0;
+            };
+        };
+        // Firing two bullets from the user's ship!
+        this.fire = function() {
+            this.bulletPool.getTwo(this.x + 6, this.y, 3, this.x + 33, this.y 3);
+        }
+    }
+}
+Ship.prototype = new Drawable();
+
+
 // Ensuring the background music has loaded before starting the game
 // function checkReadyState() {
 //     if (game.backgroundAudio.readyState === 4) {
