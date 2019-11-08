@@ -7,6 +7,7 @@ var imageRepo = new function() {
     this.background = new Image();
     this.spaceship = new Image();
     this.bullet = new Image();
+
     // Making sure that all the images have loaded before starting the game
     var numImages = 3;
     var numLoaded = 0;
@@ -25,6 +26,7 @@ var imageRepo = new function() {
     this.bullet.onload = function() {
         imageLoaded();
     }
+
     // Set the images source
     this.background.src = "imgs/bg.png";
     this.spaceship.src = "imgs/space-ship.png";
@@ -47,6 +49,7 @@ function Drawable() {
     this.speed = 0;
     this.canvasWidth = 0;
     this.canvasHeight = 0; 
+
     // Defining abstract functions that will be implemented 
     // in children of Drawable 
     this.draw = function() {
@@ -60,13 +63,16 @@ function Drawable() {
 // and it will be redrawn as it reaches the end of the canvas
 function Background() {
     this.speed = 1;
+
     // Implementing abstract function defined in the Drawable class
     this.draw = function() {
         // Panning the background
         this.y += this.speed;
         this.context.drawImage(imageRepo.background, this.x, this.y);
+
         // Draw another image at the top edge of the first image
         this.context.drawImage(imageRepo.background, this.x, this.y - this.canvasHeight);
+
         // If the image moves off the canvas, we need to redraw it!
         if (this.y >= this.canvasHeight) {
             this.y = 0;
@@ -82,6 +88,7 @@ Background.prototype = new Drawable();
 function Bullet() {
     // this will be true if the bullet is in use
     this.alive = false;
+
     // We are going to set the bullet values here
     this.spawn = function(x, y, speed) {
         this.x = x;
@@ -101,6 +108,7 @@ function Bullet() {
             this.context.drawImage(imageRepo.bullet, this.x, this.y);
         }
     };
+
     // Resetting the bullet values
     this.clear = function() {
         this.x = 0;
@@ -129,6 +137,7 @@ Bullet.prototype = new Drawable();
 function Pool(maxSize) {
     var size = maxSize;
     var pool = [];
+
     // Populate the array with bullet objects
     this.init = function() {
         for (var i = 0; i < size; i++) {
@@ -138,6 +147,7 @@ function Pool(maxSize) {
             pool[i] = bullet;
         }
     };
+
     // Taking a free bullet [i] and pushing it to the front of the array
     this.get = function(x, y, speed) {
         if(!pool[size - 1].alive) {
@@ -145,6 +155,7 @@ function Pool(maxSize) {
             pool.unshift(pool.pop());
         }
     };
+
     // get two is used for the ship to shoot 2 bullets at once
     this.getTwo = function(x1, y1, speed1, x2, y2, speed2) {
         if(!pool[size - 1].alive && !pool[size - 2].alive) {
@@ -165,7 +176,7 @@ function Pool(maxSize) {
             }
         }
     }
-}
+};
 
 
 // THE SHIP OBJECT WHOOooOooO!
@@ -176,6 +187,7 @@ function Ship() {
     // initializing pool for ship bullets!
     this.bulletPool = new Pool();
     this.bulletPool.init();
+
     // setting default values
     this.speed = 3;
     var fireRate = 15;
@@ -187,71 +199,65 @@ function Ship() {
     };
     this.move = function() {
         counter++;
+
         // Checking to see if the user's action is a movement action
         if (KEY_STATUS.left || KEY_STATUS.right || KEY_STATUS.up || KEY_STATUS.down) {
+
             // if conditional is passed, the user has request that the ship move. 
             // So, we need to erase it from its current location and redraw
             this.context.clearRect(this.x, this.y, this.height, this.width);
+
             // Updating the x and the y of the ship location and redrawing
             // not adding diagonal movement yet, but all else if's should be 
             // changed to just if's for that movement as well bc canvas runs at 60FPS! CRAZY!
             if (KEY_STATUS.left) {
                 this.x -= this.speed;
+
                 // keep the player on the canvas!
                 if (this.x <= 0) {
                     this.x = 0;
                 } 
             } else if (KEY_STATUS.right) {
                 this.x += this.speed;
+
                 // keep the player on the canvas!
                 if (this.x >= this.canvasWidth - this.width) {
                     this.x = this.canvasWidth - this.width;
                 }
             } else if (KEY_STATUS.up) {
                 this.y -= this.speed;
+
                 // keep the player on the canvas!
                 if (this.y <= this.canvasHeight / 4 * 3) {
                     this.y = this.canvasHeight / 4 * 3
                 }
             } else if (KEY_STATUS.down) {
                 this.y += this.speed;
+
                 // keep the player on the canvas!
                 if (this.y >= this.canvasHeight - this.height) {
                     this.y = this.canvasHeight - this.height;
                 }
             }
+
             // finish by redrawing the ship with the updated values!
             this.draw();
+
             // Fire bullets!
             if (KEY_STATUS.space && counter >= fireRate) {
                 this.fire();
                 counter = 0;
             };
         };
+
         // Firing two bullets from the user's ship!
         this.fire = function() {
             this.bulletPool.getTwo(this.x + 6, this.y, 3, this.x + 33, this.y 3);
         }
-    }
-}
+    };
+};
 Ship.prototype = new Drawable();
 
-
-// Ensuring the background music has loaded before starting the game
-// function checkReadyState() {
-//     if (game.backgroundAudio.readyState === 4) {
-//         console.log('CHECK READY BRUH.');
-//         window.clearInterval(game.checkAudio);
-
-//     }
-// }
-
-
-// Animation loop here! Calls REMOVE WHEN ADDED TO POOL CLASS
-// function animate() {
-//     requestAnimFrame( animate );
-//     game.background.draw();
-// }
 
 // Creating the game object which will hold all the objects and data
 function Game() {
@@ -260,59 +266,65 @@ function Game() {
         // all of the game objects. Initially init function will return true
         // if browser supports HTML5 canvas, and false if it does not. 
         this.bgCanvas = document.getElementById('background-canvas');
-        this.menuCanvas = document.getElementById('menu-canvas');
+        this.mainCanvas = document.getElementById('main-canvas');
+        this.shipCanvas = document.getElementById('ship-canvas');
+
         // Test to see whether or not browser supports HTML5 canvas elements
         // by attempting to get the context of the element on the HTML page
         if (this.bgCanvas.getContext) {
             this.bgContext = this.bgCanvas.getContext('2d');
+            this.mainContext = this.mainCanvas.getContext('2d');
+            this.shipContext = this.shipCanvas.getContext('2d');
+
             // We need to initialize objects to contain their context
-            // and their canvas information
+            // and their canvas information.
+            // Background canvas
             Background.prototype.context = this.bgContext
             Background.prototype.canvasWidth = this.bgCanvas.width;
             Background.prototype.canvasHeight = this.bgCanvas.height;
+
+            // Main Canvas
+            Main.prototype.context = this.mainContext
+            Main.prototype.canvasWidth = this.mainCanvas.width;
+            Main.prototype.canvasHeight = this.mainCanvas.height;
+
+            // Ship canvas
+            Ship.prototype.context = this.shipContext
+            Ship.prototype.canvasWidth = this.shipCanvas.width;
+            Ship.prototype.canvasHeight = this.shipCanvas.height;
+
             // Initialize the background object!
-            // Setting initial draw location to cord 0, 0!
             this.background = new Background();
             this.background.init(0, 0);
-            // Audio files
-            // this.bgCanvas.addEventListener("mouseover", function( event ) {
-                // this.backgroundAudio = new Audio("audio/ip.mp3");
-                // this.backgroundAudio.loop = true;
-                // this.backgroundAudio.volume = 0.2;
-                // this.backgroundAudio.load();
-                // this.backgroundAudio.play();
-                
-            // })
-            // Checking and looping audio with setInterval
-            // this.checkAudio = window.setInterval(function(){
-            //     checkReadyState()
-            // }, 1000);
+
+            // Initialize the ship object!
+            this.ship = new Ship();
+            var shipStartX = this.shipCanvas.width / 2 - imageRepository.spaceship.width;
+			var shipStartY = this.shipCanvas.height / 4 * 3 + imageRepository.spaceship.height * 2;
+			this.ship.init(shipStartX, shipStartY, imageRepository.spaceship.width, imageRepository.spaceship.height);
             return true;
         } else {
             return false;
         }
     }
+
     // Starting the animation loop!
     this.start = function() {
-        this.backgroundAudio.play();
+        this.ship.draw();
         animate();
-    }
+    };
 };
 
-// function startMusicXD() {
-//     this.backgroundAudio = new Audio("audio/ip.mp3");
-//     this.backgroundAudio.loop = true;
-//     this.backgroundAudio.volume = 0.2;
-//     this.backgroundAudio.load();
-//     this.backgroundAudio.play();
-// }
 
-// // Creating a sound pool for sound effects
-// // and game song.
-// function SoundPool() {
-
-// }
-
+// THE ANIMATION LOOP!
+// calls on requestAnimFrame to optimize game 
+// to user's browser. This MUST be a global function
+function animate() {
+    requestAnimFrame( animate );
+    game.background.draw();
+    game.ship.move();
+    game.ship.bulletPool.animate();
+};
 
 
 // Initialize the game
@@ -321,7 +333,11 @@ function init() {
     if (game.init()) {
         game.start();
     }
-}
+};
+
+
+// Keycode object, that will be mapped upon user input
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 // requestAnim layer finds the first browser API that 
