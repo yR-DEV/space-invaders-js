@@ -8,16 +8,27 @@
                 left: 0px;
                 background: transparent;
             }
-            button {
-                margin-top: 700px;
+            #background-canvas {
+                z-index: -2;
+            }
+            #main-canvas {
+                z-index: -1;
+            }
+            #ship-canvas {
+                z-index: 0;
             }
         </style>
     </head>
-    <body onload="init()">
+    <body>
         <canvas id="background-canvas" height="360" width="600">
             Your browser doesn't support HTML5 canvas elements, get off of netscape, bro!
         </canvas>
-        <!-- <button onclick="startMusicXD()">BUSDRIVER</button> -->
+        <canvas id="main-canvas" height="360" width="600">
+            Your browser doesn't support HTML5 canvas elements, get off of netscape, bro!
+        </canvas>
+        <canvas id="ship-canvas" height="360" width="600">
+            Your browser doesn't support HTML5 canvas elements, get off of netscape, bro!
+        </canvas>
         <script src="./js/app.js"></script>
     </body>
 </html>
