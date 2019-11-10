@@ -1,3 +1,8 @@
+// TO DO LIST/WHAT COMES NEXT
+// --------------------------
+// 
+
+
 // Initializing the game function
 var game = new Game();
 function init() {
@@ -260,6 +265,8 @@ function Ship() {
         };
 
         // Firing two bullets from the user's ship!
+        // This function will only be accessable by the ship class
+        // and fired two bullets from user controlled ship.
         this.fire = function() {
             this.bulletPool.getTwo(this.x + 6, this.y, 3, this.x + 33, this.y 3);
         }
