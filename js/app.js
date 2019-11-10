@@ -17,13 +17,15 @@ function init() {
 // created once. This type of object is called a singleton.
 var imageRepo = new function() {
     // Define images below
-    this.empty = null;
+    // this.empty = null;
     this.background = new Image();
     this.spaceship = new Image();
     this.bullet = new Image();
+    this.enemy = new Image();
+    this.enemyBullet = new Image();
 
     // Making sure that all the images have loaded before starting the game
-    var numImages = 3;
+    var numImages = 5;
     var numLoaded = 0;
     function imageLoaded() {
         numLoaded ++;
@@ -40,11 +42,19 @@ var imageRepo = new function() {
     this.bullet.onload = function() {
         imageLoaded();
     }
+    this.enemy.onload = function() {
+        imageLoaded();
+    }
+    this.enemyBullet.onload = function() {
+        imageLoaded();
+    }
 
     // Set the images source
     this.background.src = "imgs/bg.png";
     this.spaceship.src = "imgs/space-ship.png";
     this.bullet.src = "imgs/bullet.png";
+    this.enemy.src = "imgs/enemy.png";
+    this.enemyBullet.src = "imgs/enemy_bullet.png"
 };
 
 
@@ -116,10 +126,17 @@ function Bullet() {
     this.draw = function() {
         this.context.clearRect(this.x, this.y, this.width, this.height);
         this.y -= this.speed;
-        if (this.y <= 0 - this.height) {
+        if (self === "bullet" && this.y <= 0 - this.height) {
+            return true;
+        } else if (self === "enemyBullet" && this.y >= this.canvasHeight) {
             return true;
         } else {
-            this.context.drawImage(imageRepo.bullet, this.x, this.y);
+            if (self === "bullet") {
+                this.context.drawImage(imageRepo.bullet, this.x, this.y);
+            } else if (self === "enemyBullet") {
+                this.context.drawImage(imageRepo.enemyBullet, this.x, this.y);
+            }
+            return false;
         }
     };
 
@@ -132,6 +149,65 @@ function Bullet() {
     };
 };
 Bullet.prototype = new Drawable();
+
+
+// Creating the enemy ship object
+function Enemy() {
+    var percentFire = .01;
+    var chance = 0;
+    this.alive = false;
+
+    // Setting the enemy values
+    this.spawn = function(x, y, speed) {
+        this.x = x;
+        this.y = y;
+        this.speed = speed;
+        this.speedX = 0;
+        this.speedY = speed;
+        this.leftEdge = this.x - 90;
+        this.rightEdge = this.x + 90;
+        this.bottomEdge = this.y + 120;
+    }
+
+    // Draw the eneimes do that they move!
+    this.draw = function() {
+        this.context.clearRect(this.x - 1, this.y, this.width + 1, this.height);
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x <= this.leftEdge) {
+            this.speedX = this.speed;
+        } else if (this.x >= this.rightEdge + this.width) {
+            this.speedX -= this.speed;
+        } else if (this.y >= this.bottomEdge) {
+            this.speed = 1.5;
+            this.speedY = 0;
+            this.y -= 5;
+            this.speedX = -this.speed;
+        }
+        this.context.drawImage(imageRepo.enemy, this.x, this.y);
+
+        // RNG whether or not the enemy fires a bullet upon movement
+        chance = Math.floor(Math.random()*100);
+        if (chance / 100 < percentFire) {
+            this.fire();
+        }
+    };
+
+    this.fire = function() {
+        game.enemyBulletPool.get(this.x + this.width / 2, this.y + this.height, -2.5);
+    }
+
+    // Resetting the enemy values
+    this.clear = function() {
+        this.x = 0;
+        this.y = 0;
+        this.speedX = 0;
+        this.speedY = 0;
+        this.speed = 0;
+        this.alive = false;
+    };
+}
+Enemy.prototype = new Drawable();
 
 
 // The POOL OBJECT! IMPORTANT!
@@ -153,12 +229,26 @@ function Pool(maxSize) {
     var pool = [];
 
     // Populate the array with bullet objects
-    this.init = function() {
-        for (var i = 0; i < size; i++) {
-            // initialize the bulletz
-            var bullet = new Bullet();
-            bullet.init(0, 0, imageRepo.bullet.width, imageRepo.bullet.height);
-            pool[i] = bullet;
+    this.init = function(object) {
+        // for (var i = 0; i < size; i++) {
+        //     // initialize the bulletz
+        //     var bullet = new Bullet();
+            // bullet.init(0, 0, imageRepo.bullet.width, imageRepo.bullet.height);
+        //     pool[i] = bullet;
+        // }
+        if (object === "bullet") {
+            for (var i = 0; i < size; i++) {
+                // initialize the bullet
+                var bullet = new Bullet("bullet");
+                bullet.init(0, 0, imageRepo.bullet.width, imageRepo.bullet.height);
+                pool[i] = bullet;
+            }
+            ///////// THIS IS WHERE YOU STOPPED TO GO UP AND MAKE AN ENEMY CLASS
+            /// ------------------------------------------------------
+        } else if (object === "enemy") {
+            for (var i = 0; i < size; i++) {
+                var enemy = new Enemy();
+            }
         }
     };
 
