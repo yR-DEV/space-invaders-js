@@ -53,7 +53,7 @@ var imageRepo = new function() {
 // Sets default balues that all child object will inherit,
 // as well as the default functions they will inherit.
 function Drawable() {
-    this.init = function(x, y, height, width) {
+    this.init = function(x, y, width, height) {
         // Setting default x, y, height, and width values
         this.x = x;
         this.y = y;
@@ -114,7 +114,7 @@ function Bullet() {
     // Checking to see if the bullet has gone off canvas
     // if it has, we are going to clear it before it is redrawn
     this.draw = function() {
-        this.context.clearRect(this.x, this.y, this.height, this.width);
+        this.context.clearRect(this.x, this.y, this.width, this.height);
         this.y -= this.speed;
         if (this.y <= 0 - this.height) {
             return true;
@@ -157,7 +157,7 @@ function Pool(maxSize) {
         for (var i = 0; i < size; i++) {
             // initialize the bulletz
             var bullet = new Bullet();
-            bullet.init(0, 0, imageRepo.bullet.height, imageRepo.bullet.width);
+            bullet.init(0, 0, imageRepo.bullet.width, imageRepo.bullet.height);
             pool[i] = bullet;
         }
     };
@@ -183,7 +183,7 @@ function Pool(maxSize) {
             if (pool[i].alive) {
                 if (pool[i].draw()) {
                     pool[i].clear();
-                    pool.push((pool.space(i, 1))[0]);
+                    pool.push((pool.splice(i, 1))[0]);
                 }
             } else {
                 break;
@@ -199,7 +199,7 @@ function Pool(maxSize) {
 // and prevent unecessary garbage collection
 function Ship() {
     // initializing pool for ship bullets!
-    this.bulletPool = new Pool();
+    this.bulletPool = new Pool(30);
     this.bulletPool.init();
 
     // setting default values
@@ -268,7 +268,7 @@ function Ship() {
         // This function will only be accessable by the ship class
         // and fired two bullets from user controlled ship.
         this.fire = function() {
-            this.bulletPool.getTwo(this.x + 6, this.y, 3, this.x + 33, this.y 3);
+            this.bulletPool.getTwo(this.x + 6, this.y, 3, this.x + 33, this.y + 3, 3);
         }
     };
 };
@@ -299,15 +299,15 @@ function Game() {
             Background.prototype.canvasWidth = this.bgCanvas.width;
             Background.prototype.canvasHeight = this.bgCanvas.height;
 
-            // Main Canvas
-            Main.prototype.context = this.mainContext
-            Main.prototype.canvasWidth = this.mainCanvas.width;
-            Main.prototype.canvasHeight = this.mainCanvas.height;
-
-            // Ship canvas
+            // ship
             Ship.prototype.context = this.shipContext
             Ship.prototype.canvasWidth = this.shipCanvas.width;
             Ship.prototype.canvasHeight = this.shipCanvas.height;
+
+            // Ship canvas
+            Bullet.prototype.context = this.mainContext
+            Bullet.prototype.canvasWidth = this.mainCanvas.width;
+            Bullet.prototype.canvasHeight = this.mainCanvas.height;
 
             // Initialize the background object!
             this.background = new Background();
@@ -315,9 +315,9 @@ function Game() {
 
             // Initialize the ship object!
             this.ship = new Ship();
-            var shipStartX = this.shipCanvas.width / 2 - imageRepository.spaceship.width;
-			var shipStartY = this.shipCanvas.height / 4 * 3 + imageRepository.spaceship.height * 2;
-			this.ship.init(shipStartX, shipStartY, imageRepository.spaceship.width, imageRepository.spaceship.height);
+            var shipStartX = this.shipCanvas.width - imageRepo.spaceship.width;
+			var shipStartY = this.shipCanvas.height / 4 * 3 + imageRepo.spaceship.height * 2;
+			this.ship.init(shipStartX, shipStartY, imageRepo.spaceship.height, imageRepo.spaceship.width);
             return true;
         } else {
             return false;
