@@ -54,7 +54,7 @@ var imageRepo = new function() {
     this.spaceship.src = "imgs/space-ship.png";
     this.bullet.src = "imgs/bullet.png";
     this.enemy.src = "imgs/enemy.png";
-    this.enemyBullet.src = "imgs/enemy_bullet.png"
+    this.enemyBullet.src = "imgs/bullet_enemy.png"
 };
 
 
@@ -243,13 +243,17 @@ function Pool(maxSize) {
                 bullet.init(0, 0, imageRepo.bullet.width, imageRepo.bullet.height);
                 pool[i] = bullet;
             }
-            ///////// THIS IS WHERE YOU STOPPED TO GO UP AND MAKE AN ENEMY CLASS
-            /// ------------------------------------------------------
         } else if (object === "enemy") {
             for (var i = 0; i < size; i++) {
                 var enemy = new Enemy();
             }
-        }
+        } else if (object == "enemyBullet") {
+			for (var i = 0; i < size; i++) {
+				var bullet = new Bullet("enemyBullet");
+				bullet.init(0,0, imageRepo.enemyBullet.width, imageRepo.enemyBullet.height);
+				pool[i] = bullet;
+			}
+		}
     };
 
     // Taking a free bullet [i] and pushing it to the front of the array
@@ -407,7 +411,28 @@ function Game() {
             this.ship = new Ship();
             var shipStartX = this.shipCanvas.width - imageRepo.spaceship.width;
 			var shipStartY = this.shipCanvas.height / 4 * 3 + imageRepo.spaceship.height * 2;
-			this.ship.init(shipStartX, shipStartY, imageRepo.spaceship.height, imageRepo.spaceship.width);
+            this.ship.init(shipStartX, shipStartY, imageRepo.spaceship.height, imageRepo.spaceship.width);
+            
+            // Initialize the enemy pool object
+            this.enemyPool = new Pool(30);
+            this.enemyPool.init("enemy");
+            var height = imageRepo.enemy.height;
+            var width = imageRepo.enemy.width;
+            var x = 100;
+            var y = -height;
+            var spacer = y * 1.5;
+            for (var i = 1; i <= 18; i++) {
+                this.enemyPool.get(x,y,2);
+                x += width + 25;
+                if (i % 6 == 0) {
+                    x = 100;
+                    y += spacer
+                }
+            }
+
+            this.enemyBulletPool = new Pool(50);
+            this.enemyBulletPool.init("enemyBullet");
+
             return true;
         } else {
             return false;
