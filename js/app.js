@@ -112,6 +112,7 @@ Background.prototype = new Drawable();
 function Bullet() {
     // this will be true if the bullet is in use
     this.alive = false;
+    var self = object;
 
     // We are going to set the bullet values here
     this.spawn = function(x, y, speed) {
@@ -150,6 +151,82 @@ function Bullet() {
 };
 Bullet.prototype = new Drawable();
 
+
+// The POOL OBJECT! IMPORTANT!
+// this object holds bullet objects and manages them 
+// to prevent garbage collection and work like so:
+//     - When the pool is initialized, it will populate an array with bullet object
+//     - When the pool needs to create a bullet object for use, it will check to see if it
+//       is currently in use in the array or not in use. If it is in use, the pool is full and
+//       if it isn't in use, it will spawn the last item in the array and pops it from the end and 
+//       pushes it back into the front of the array. This makes the pool have free bullet objects
+//       at the back of the array and ones in use at the front
+//     - When the pool animates it objects, it checks to see if the object isn't in use; i.e. no need to draw
+//       and if it is, it will draw it! 
+//     - If the draw function returns true, the object is cleared and uses the array function splice() to remove
+//       item from the array and pushes it to the back
+//     - This entire pool make the creation and destruction of objects in the pool constant with gameplay
+function Pool(maxSize) {
+    var size = maxSize;
+    var pool = [];
+
+    // Populate the array with bullet objects
+    this.init = function(object) {
+        // for (var i = 0; i < size; i++) {
+        //     // initialize the bulletz
+        //     var bullet = new Bullet();
+            // bullet.init(0, 0, imageRepo.bullet.width, imageRepo.bullet.height);
+        //     pool[i] = bullet;
+        // }
+        if (object === "bullet") {
+            for (var i = 0; i < size; i++) {
+                // initialize the bullet
+                var bullet = new Bullet("bullet");
+                bullet.init(0, 0, imageRepo.bullet.width, imageRepo.bullet.height);
+                pool[i] = bullet;
+            }
+        } else if (object === "enemy") {
+            for (var i = 0; i < size; i++) {
+                var enemy = new Enemy();
+            }
+        } else if (object === "enemyBullet") {
+            for (var i = 0; i < size; i++) {
+                var bullet = new Bullet("enemyBullet");
+                bullet.init(0, 0, imageRepo.enemyBullet.width, imageRepo.enemyBullet.height);
+                pool[i] = bullet;
+            }
+        }
+    };
+
+    // Taking a free bullet [i] and pushing it to the front of the array
+    this.get = function(x, y, speed) {
+        if(!pool[size - 1].alive) {
+            pool[size - 1].spawn(x, y, speed);
+            pool.unshift(pool.pop());
+        }
+    };
+
+    // get two is used for the ship to shoot 2 bullets at once
+    this.getTwo = function(x1, y1, speed1, x2, y2, speed2) {
+        if(!pool[size - 1].alive && !pool[size - 2].alive) {
+            this.get(x1, y1, speed1);
+            this.get(x2, y2, speed2);
+        }
+    };
+    this.animate = function() {
+        for (var i = 0; i < size; i++) {
+            // only draw bullets until we find one in pool array that isn't 'alive'
+            if (pool[i].alive) {
+                if (pool[i].draw()) {
+                    pool[i].clear();
+                    pool.push((pool.splice(i, 1))[0]);
+                }
+            } else {
+                break;
+            }
+        }
+    }
+};
 
 // Creating the enemy ship object
 function Enemy() {
@@ -210,81 +287,6 @@ function Enemy() {
 Enemy.prototype = new Drawable();
 
 
-// The POOL OBJECT! IMPORTANT!
-// this object holds bullet objects and manages them 
-// to prevent garbage collection and work like so:
-//     - When the pool is initialized, it will populate an array with bullet object
-//     - When the pool needs to create a bullet object for use, it will check to see if it
-//       is currently in use in the array or not in use. If it is in use, the pool is full and
-//       if it isn't in use, it will spawn the last item in the array and pops it from the end and 
-//       pushes it back into the front of the array. This makes the pool have free bullet objects
-//       at the back of the array and ones in use at the front
-//     - When the pool animates it objects, it checks to see if the object isn't in use; i.e. no need to draw
-//       and if it is, it will draw it! 
-//     - If the draw function returns true, the object is cleared and uses the array function splice() to remove
-//       item from the array and pushes it to the back
-//     - This entire pool make the creation and destruction of objects in the pool constant with gameplay
-function Pool(maxSize) {
-    var size = maxSize;
-    var pool = [];
-
-    // Populate the array with bullet objects
-    this.init = function(object) {
-        // for (var i = 0; i < size; i++) {
-        //     // initialize the bulletz
-        //     var bullet = new Bullet();
-            // bullet.init(0, 0, imageRepo.bullet.width, imageRepo.bullet.height);
-        //     pool[i] = bullet;
-        // }
-        if (object === "bullet") {
-            for (var i = 0; i < size; i++) {
-                // initialize the bullet
-                var bullet = new Bullet("bullet");
-                bullet.init(0, 0, imageRepo.bullet.width, imageRepo.bullet.height);
-                pool[i] = bullet;
-            }
-        } else if (object === "enemy") {
-            for (var i = 0; i < size; i++) {
-                var enemy = new Enemy();
-            }
-        } else if (object == "enemyBullet") {
-			for (var i = 0; i < size; i++) {
-				var bullet = new Bullet("enemyBullet");
-				bullet.init(0,0, imageRepo.enemyBullet.width, imageRepo.enemyBullet.height);
-				pool[i] = bullet;
-			}
-		}
-    };
-
-    // Taking a free bullet [i] and pushing it to the front of the array
-    this.get = function(x, y, speed) {
-        if(!pool[size - 1].alive) {
-            pool[size - 1].spawn(x, y, speed);
-            pool.unshift(pool.pop());
-        }
-    };
-
-    // get two is used for the ship to shoot 2 bullets at once
-    this.getTwo = function(x1, y1, speed1, x2, y2, speed2) {
-        if(!pool[size - 1].alive && !pool[size - 2].alive) {
-            this.get(x1, y1, speed1);
-            this.get(x2, y2, speed2);
-        }
-    };
-    this.animate = function() {
-        for (var i = 0; i < size; i++) {
-            // only draw bullets until we find one in pool array that isn't 'alive'
-            if (pool[i].alive) {
-                if (pool[i].draw()) {
-                    pool[i].clear();
-                    pool.push((pool.splice(i, 1))[0]);
-                }
-            } else {
-                break;
-            }
-        }
-    }
-};
 
 
 // THE SHIP OBJECT WHOOooOooO!
@@ -294,7 +296,7 @@ function Pool(maxSize) {
 function Ship() {
     // initializing pool for ship bullets!
     this.bulletPool = new Pool(30);
-    this.bulletPool.init();
+    this.bulletPool.init("bullet");
 
     // setting default values
     this.speed = 3;
@@ -413,7 +415,7 @@ function Game() {
 			var shipStartY = this.shipCanvas.height / 4 * 3 + imageRepo.spaceship.height * 2;
             this.ship.init(shipStartX, shipStartY, imageRepo.spaceship.height, imageRepo.spaceship.width);
             
-            // Initialize the enemy pool object
+            // Init the pool object for enemies!!!
             this.enemyPool = new Pool(30);
             this.enemyPool.init("enemy");
             var height = imageRepo.enemy.height;
