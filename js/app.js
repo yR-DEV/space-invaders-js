@@ -109,7 +109,7 @@ Background.prototype = new Drawable();
 
 // Creating the bullet object which fire from the ship
 // when the user presses spacebar and it is drawn on the main canvas
-function Bullet() {
+function Bullet(object) {
     // this will be true if the bullet is in use
     this.alive = false;
     var self = object;
@@ -457,6 +457,8 @@ function animate() {
     game.background.draw();
     game.ship.move();
     game.ship.bulletPool.animate();
+    game.enemyPool.animate();
+    game.enemyBulletPool.animate();
 };
 
 
